@@ -5,6 +5,7 @@ import com.learning.UserServiceFinal.Exceptions.AlreadyExistsException;
 import com.learning.UserServiceFinal.Exceptions.BadCredentialsException;
 import com.learning.UserServiceFinal.Exceptions.InvalidSessionException;
 import com.learning.UserServiceFinal.Exceptions.NotFoundException;
+import com.learning.UserServiceFinal.Models.Role;
 import com.learning.UserServiceFinal.Models.Session;
 import com.learning.UserServiceFinal.Models.SessionStatus;
 import com.learning.UserServiceFinal.Models.User;
@@ -25,10 +26,7 @@ import org.springframework.util.MultiValueMapAdapter;
 import javax.crypto.SecretKey;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class AuthService {
@@ -72,7 +70,7 @@ public class AuthService {
         claims.put("email", email);
         claims.put("name", user.getName());
         claims.put("expiryAt", new Date(LocalDateTime.now().plusDays(1).toEpochSecond(ZoneOffset.ofHours(18))));
-        claims.put("role", user.getRoles());
+        claims.put("roles", user.getRoles());
         String token = Jwts
                 .builder()
                 .claims(claims)
@@ -100,18 +98,6 @@ public class AuthService {
         if(session.getSessionStatus().equals(SessionStatus.ENDED)){
             return SessionStatus.ENDED;
         }
-
-        return SessionStatus.ACTIVE;
-    }
-
-    public void logout(String token, Long userId) throws InvalidSessionException {
-        Optional<Session> optionalSession = sessionRepository
-                .findSessionByTokenAndUser_Id(token, userId);
-        if(optionalSession.isEmpty()){
-            return;
-        }
-        Session session = optionalSession.get();
-        session.setSessionStatus(SessionStatus.ENDED);
         Jws<Claims> claimsJws = Jwts
                 .parser()
                 .verifyWith(secretKey)
@@ -120,9 +106,22 @@ public class AuthService {
 
         String email = (String) claimsJws.getPayload().get("email");
         Date expiry = claimsJws.getPayload().getExpiration();
-        if(expiry.before(new Date())){
-            throw new InvalidSessionException("Session expired, please login again!");
+
+        System.out.println(email);
+        System.out.println(expiry);
+        System.out.println("debug");
+
+        return SessionStatus.ACTIVE;
+    }
+
+    public void logout(String token, Long userId) {
+        Optional<Session> optionalSession = sessionRepository
+                .findSessionByTokenAndUser_Id(token, userId);
+        if(optionalSession.isEmpty()){
+            return;
         }
+        Session session = optionalSession.get();
+        session.setSessionStatus(SessionStatus.ENDED);
         sessionRepository.save(session);
     }
 }

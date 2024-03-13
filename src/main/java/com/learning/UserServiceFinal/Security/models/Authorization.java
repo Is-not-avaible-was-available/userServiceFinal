@@ -2,6 +2,7 @@ package com.learning.UserServiceFinal.Security.models;
 
 import java.time.Instant;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -12,6 +13,7 @@ import lombok.Setter;
 @Getter
 @Entity
 @Setter
+@JsonDeserialize(as = Authorization.class)
 @Table(name = "`authorization`")
 public class Authorization {
     @Id

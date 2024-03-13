@@ -14,7 +14,7 @@ import java.util.Date;
 @Entity
 @Getter
 @Setter
-@JsonDeserialize(as = Setter.class)
+
 public class Session extends BaseModel{
 
     private String token;

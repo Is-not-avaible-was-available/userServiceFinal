@@ -3,6 +3,7 @@ package com.learning.UserServiceFinal.Security.models;
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -14,6 +15,7 @@ import lombok.Setter;
 @Setter
 @Getter
 @Entity
+@JsonDeserialize(as = AuthorizationConsent.class)
 @Table(name = "`authorizationConsent`")
 @IdClass(AuthorizationConsent.AuthorizationConsentId.class)
 public class AuthorizationConsent {
