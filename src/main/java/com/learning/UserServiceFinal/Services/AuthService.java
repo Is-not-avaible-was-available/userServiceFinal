@@ -70,7 +70,7 @@ public class AuthService {
         claims.put("email", email);
         claims.put("name", user.getName());
         claims.put("expiryAt", new Date(LocalDateTime.now().plusDays(1).toEpochSecond(ZoneOffset.ofHours(18))));
-        claims.put("roles", user.getRoles());
+//        claims.put("roles", user.getRoles());
         String token = Jwts
                 .builder()
                 .claims(claims)
