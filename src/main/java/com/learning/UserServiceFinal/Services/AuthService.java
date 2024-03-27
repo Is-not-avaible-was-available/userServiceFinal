@@ -71,7 +71,7 @@ public class AuthService {
         sendEmailDTO.setMessage("Welcome to my app, good to see you here!");
 
         try {
-            kafkaProducerClient.sendMessage("sendEmailToUser",
+            kafkaProducerClient.sendMessage("sendSignUpEmail",
                     objectMapper.writeValueAsString(sendEmailDTO));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
