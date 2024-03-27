@@ -1,5 +1,9 @@
 package com.learning.UserServiceFinal.Services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.learning.UserServiceFinal.Clients.KafkaProducerClient;
+import com.learning.UserServiceFinal.DTOs.SendEmailDTO;
 import com.learning.UserServiceFinal.DTOs.UserDTO;
 import com.learning.UserServiceFinal.Exceptions.AlreadyExistsException;
 import com.learning.UserServiceFinal.Exceptions.BadCredentialsException;
@@ -34,13 +38,19 @@ public class AuthService {
     private final SessionRepository sessionRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final SecretKey secretKey;
+    private final KafkaProducerClient kafkaProducerClient;
+    private final ObjectMapper objectMapper;
 
     public AuthService(UserRepository userRepository,
-                       SessionRepository sessionRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+                       SessionRepository sessionRepository, BCryptPasswordEncoder bCryptPasswordEncoder
+                 ,ObjectMapper objectMapper, KafkaProducerClient kafkaProducerClient
+    ) {
         this.userRepository = userRepository;
         this.sessionRepository = sessionRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.secretKey = Jwts.SIG.HS256.key().build();
+        this.objectMapper = objectMapper;
+        this.kafkaProducerClient = kafkaProducerClient;
     }
 
     public UserDTO signUp(String email, String name, String password) throws AlreadyExistsException {
@@ -53,6 +63,20 @@ public class AuthService {
         user.setEmail(email);
         user.setPassword(bCryptPasswordEncoder.encode(password));
         User saved = userRepository.save(user);
+
+        SendEmailDTO sendEmailDTO = new SendEmailDTO();
+        sendEmailDTO.setFrom("yadraj1803@gmail.com");
+        sendEmailDTO.setTo(user.getEmail());
+        sendEmailDTO.setSubject("Welcome");
+        sendEmailDTO.setMessage("Welcome to my app, good to see you here!");
+
+        try {
+            kafkaProducerClient.sendMessage("sendEmailToUser",
+                    objectMapper.writeValueAsString(sendEmailDTO));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
         return UserDTO.from(saved);
     }
 
